@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Social Media Queries --> 
+    <meta property="og:title" content="Virtual Olympiad"/> 
+    <meta property="og:image" content="https://raw.githubusercontent.com/1e9end/minesweeper-battles/master/assets/favicon.png"/>
+    <meta property="og:description" content="Host online contest math competitions & practice" /> 
+    <meta property="og:type" content="website"/>
+
+    <title>Virtual Olympiad</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@1.29.0/dist/tsparticles.min.js"></script>
+    <link rel="icon" type="image/png" href="./assets/favicon.png"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Roboto&display=swap" rel="stylesheet"> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src = "/socket.io/socket.io.js"></script>
+
+    <script src = "main.js" defer></script>
+    <style>
+        body{
+            overflow: hidden;
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        #bg{
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background-color: rgb(245, 245, 245);
+        }
+
+        canvas {
+          display: block;
+        }
+
+        .v-center{
+            display: block;
+            position: relative; 
+            top: 50%; 
+            -ms-transform: translateY(-50%);
+            -webkit-transform: translateY(-50%);
+            transform: translateY(-50%);
+        }
+
+        #menu, #room, #questions {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+        }
+
+        #menu {
+          top: 45%;
+          background-color: rgba(255, 255, 255, 0.8);
+          padding: 30px;
+        }
+
+        #menu button{
+          background-color: #0160e2;
+          margin-top: 5px;
+          display: inline-block;
+          padding: 10px 25px;
+          border: none;
+          color: white;
+          text-align: center;
+          font-size: 16px;
+        }
+
+        #menu button:hover{
+          background-color: #0150e2;
+        }
+
+        #title {
+          font-size: clamp(80px, 10vh, 120px);
+          font-family: 'Barlow Condensed', sans-serif;
+          line-height: clamp(70px, 9vh, 110px);
+          margin: 0 0 10px 0;
+          text-shadow: 2px 2px 5px rgb(0, 0, 0, 0.5);
+        }
+
+        .menu-buttons{
+          display: inline-block;
+          margin: 20px 20px 0 20px;
+        }
+
+        .input {
+          text-align: center;
+          margin: auto;
+        }
+
+        #name-input {
+          width: clamp(325px, 20vw, 400px);
+          padding: 10px;
+          font-size: 14px;
+        }
+
+        #code-input {
+          width: 80px;
+          padding: 5px;
+        }
+
+        #description {
+          position: absolute;
+          right: 10px;
+          width: 20%;
+          height: 50vh;
+          top: 50%; 
+          -ms-transform: translateY(-50%);
+          -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+          padding: 20px;
+          background-color: rgba(255, 255, 255, 0.8);
+          border-radius: 15px;
+          overflow-y: auto;
+        }
+
+        #room {
+          width: clamp(470px, 30vw, 600px);
+          height: clamp(280px, 30vh, 350px);
+          background-color: rgba(0, 0, 0, 0.5);
+          border-radius: 10px;
+          color: white;
+        }
+
+        #room table {
+          float: left;
+          margin: 10px;
+          width: 40%;
+          height: calc(100% - 20px);
+          border-radius: 20px;
+          border-spacing: 8px;
+          font-size: 16px;
+        }
+      
+        #room td {
+          height: 10%;
+          background-clip: padding-box;
+          background-color: rgba(255, 255, 255, 0.3);
+          border-radius: 5px;
+        }
+
+        #room-info {
+          float: right;
+          margin: 18px;
+          width: clamp(225px, 40%, 300px);
+          height: calc(100% - 36px);
+        }
+
+        .room-details {
+          display: inline-block;
+          padding: 10px;
+          margin-bottom: 15px;
+          border-radius: 5px;
+          background-color: rgba(255, 255, 255, 0.3);
+          vertical-align: top;
+        }
+
+        #question-amount-wrapper {
+          width: calc(100% - 10px);
+          vertical-align: middle;
+          padding: 5px;
+          margin-bottom: 5px;
+          border-radius: 5px;
+          background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        #question-amount-slider {
+          max-width: calc(100% - 70px);
+          vertical-align: middle;
+
+          /**
+          -webkit-appearance: none;
+          background: linear-gradient(to right, #0160e2 0%, #0160e2 20%, #e9e8ee 10%, #e9e8ee 100%);
+          border-radius: 5px;
+          outline: none;
+          height: 5px;
+          opacity: 1;
+          -webkit-transition: opacity .2s, background 450ms ease-in;
+          transition: opacity .2s, background 450ms ease-in;
+          **/
+        }
+        
+        /** 
+
+        #question-amount-slider:hover {
+          opacity: 0.7;
+        }
+
+        #question-amount-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+
+          width: 15px;
+          height: 15px;
+          border-radius: 50%; 
+          background: #0160e2;
+          cursor: pointer;
+        }
+
+        #question-amount-slider::-moz-range-thumb {
+          width: 15px;
+          height: 15px;
+          border-radius: 50%;
+          background: #0160e2;
+          cursor: pointer;
+        }
+
+        **/
+
+        #question-amount-input {
+          vertical-align: middle;
+          width: 40px;
+        }
+
+        #question-source-wrapper {
+          float: left;
+          padding: 5px;
+          margin-bottom: 5px;
+          border-radius: 5px;
+          background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .question-sources {
+          margin-right: 5px;
+          white-space: nowrap;
+        }
+
+        #start-button-wrapper {
+          position: absolute;
+          width: clamp(225px, 40%, 300px);
+          bottom: 18px;
+          text-align: center;
+        }
+
+        #start-button {
+          padding: 10px 25px;
+          background-color: #0160e2;
+          border-radius: 5px;
+          border: none;
+          color: white;
+          font-size: 16px;
+        }
+
+        #start-button:hover{
+          background-color: #0148e2;
+        }
+
+        #quit-button-wrapper {
+          position: absolute;
+          top: 0px;
+          right: 2px;
+          color: black;
+          border-radius: 5px;
+          padding: 0 2px;
+        }
+
+        #quit-button-wrapper:hover {
+          background-color: rgba(255, 255, 255, 0.3);
+          cursor: pointer;
+        }
+
+        #questions {
+          background-color: white;
+          width: max(700px, 50vw);
+          height: 100vh;
+        }
+
+        #nav-bar {
+          margin: 10px;
+          width: calc(100% - 20px);
+          height: calc(clamp(70px, 10vh, 120px) - 10px);
+          border-radius: 10px;
+        }
+
+        #question-wrapper {
+          margin: 10px;
+          width: calc(100% - 20px);
+          height: calc(100vh - 20px - clamp(70px, 10vh, 120px));
+          overflow: auto;
+          border-top: solid 1px gray;
+        }
+
+        .question {
+          padding: 10px 20px;
+          border-bottom: solid 1px gray;
+          text-align: left;
+        }
+
+        .question-title {
+          color: #012499;
+          margin: 0;
+          margin-bottom: 10px;
+        }
+
+        .problem {
+          font-family: 'Roboto', sans-serif;
+          font-size: 15px;
+          margin-bottom: 10px;
+          line-height: 21.4333px;
+        }
+
+        .answer-input {
+          text-align: center;
+          width: clamp(50px, 5vw, 110px);
+        }
+
+        #time-remaining-wrapper {
+          float: left;
+          padding: 5px;
+          border-radius: 5px;
+          background-color: rgba(0, 0, 0, 0.7);
+          color: white;
+        }
+
+        #time-remaining {
+          margin: 10px 0;
+        }
+
+        #submit-answer-button {
+          float: right;
+          margin-right: 10px;
+          padding: 10px 15px;
+          background-color: #0160e2;
+          border-radius: 5px;
+          border: none;
+          color: white;
+          font-size: 16px;
+        }
+
+        #submit-answer-button:hover{
+          background-color: #0148e2;
+        }
+
+        .latexcenter {
+          display: block;
+          margin: auto;
+          padding: 1em 0;
+          -webkit-box-sizing: content-box;
+          -moz-box-sizing: content-box;
+          box-sizing: content-box;
+          transform: initial;
+          -moz-transform: rotate(0deg); /* Firefox hack */
+          max-width: 100%;
+          height: auto;
+        }
+
+        img .latex {
+          vertical-align: baseline;
+          transform: initial;
+	        -moz-transform: rotate(0deg);
+        }
+
+        #room, #questions {
+          display: none;
+        }
+
+        /* SNACKBAR ANIM */
+        #snackbar {
+          visibility: hidden; 
+          min-width: 250px;
+          margin-left: -125px;
+          background-color: #333; 
+          color: #fff; 
+          text-align: center; 
+          border-radius: 2px; 
+          padding: 16px; 
+          position: fixed; 
+          z-index: 1;
+          left: 50%; 
+          bottom: 30px; 
+        }
+
+        #snackbar.show {
+          visibility: visible;
+          -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+          animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @-webkit-keyframes fadein {
+          from {bottom: 0; opacity: 0;}
+          to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadein {
+          from {bottom: 0; opacity: 0;}
+          to {bottom: 30px; opacity: 1;}
+        }
+
+        @-webkit-keyframes fadeout {
+          from {bottom: 30px; opacity: 1;}
+          to {bottom: 0; opacity: 0;}
+        }
+
+        @keyframes fadeout {
+          from {bottom: 30px; opacity: 1;}
+          to {bottom: 0; opacity: 0;}
+        } 
+
+        #footer{
+            position: absolute;
+            left: 0px;
+            bottom: 0px;
+            padding: 5px;
+            text-align: center;
+        }
+
+        /* MOBILE */
+        @media only screen and (max-width: 1000px) {
+          #description {
+            text-align: center;
+            right: initial;
+            bottom: 10px;
+            padding: 10px;
+            width: calc(100vw - 20px);
+            height: 20vh;
+
+            top: initial; 
+            -ms-transform: initial;
+            -webkit-transform: initial;
+            transform: initial;
+          }
+        }
+    </style>
+</head>
+<body>
+    <div id = "bg"></div>
+    <div id = "menu">
+      <p id="title">VIRTUAL<br>∅LYMPIAD</p>
+      <input type="text" class="input" id="name-input" name="name-input" minlength = "1" maxlength="15" placeholder="Enter a name"><br>
+      <div class = "menu-buttons">
+        <input type="text" class="input" id="code-input" name="code-input" maxlength="4" placeholder="Code"><br>
+        <button id = "join-room-buttom" onclick="joinRoom()">Join Room</button>
+      </div>
+      <div class = "menu-buttons">
+        <select id = "select-mode" name="select-mode" style = "margin-bottom:4px;">
+          <option value="NORMAL" selected="selected">Normal</option>
+          <option value="NORMAL">Time Rush</option>
+        </select><br>
+        <button id = "create-room-buttom" onclick="createRoom()">Create Room</button>
+      </div>
+    </div>
+    <div id = "description">
+    </div>
+    <div id = "room">
+      <table id = "room-players">
+      </table>
+      <div id = "room-info">
+        <div id = "room-details-wrapper">
+          <div id = "room-code-wrapper" class="room-details">
+            <span style="font-weight: bold;">Room Code</span><br>
+            <span id = "room-code"></span>
+          </div>
+          <div id = "game-mode-wrapper" class="room-details">
+            <span style="font-weight: bold;">Game Mode</span><br>
+            <span id = "game-mode"></span>
+          </div>
+        </div>
+        
+        <div id = "question-amount-wrapper">
+          Question Amount<br>
+          <input id = "question-amount-slider" type="range" min="1" max="50" step="1" value="10" onchange="changeQuestionAmount(0)" oninput="updateSlider()"/>
+          <input id = "question-amount-input" type="number" min="1" max="50" value="10" onfocus="this.oldValue = this.value;" onchange="changeQuestionAmount(1)"/>
+        </div>
+
+        <div id = "question-source-wrapper">
+          Question Source(s)<br>
+          <span class="question-sources">
+            <input id = "question-source-amc8" type="checkbox" name="question-source-amc8" value="AMC_8" onchange="changeSources()"/>
+            <label for="question-source-amc8">AMC 8</label>
+          </span>
+          <span class="question-sources">
+            <input id = "question-source-amc10" type="checkbox" value="AMC_10" onchange="changeSources()"/>
+            <label for="question-source-amc10">AMC 10</label>
+          </span>
+          <span class="question-sources">
+            <input id = "question-source-amc12" type="checkbox" value="AMC_12" onchange="changeSources()"/>
+            <label for="question-source-amc12">AMC 12</label>
+          </span>
+          <span class="question-sources">
+            <input id = "question-source-aime" type="checkbox" value="AIME" onchange="changeSources()"/>
+            <label for="question-source-aime">AIME</label>
+          </span>
+        </div>
+        <div id="start-button-wrapper">
+          <button id="start-button" onclick="startGame()">Start</button>
+        </div>
+        <div id="quit-button-wrapper" onclick="leaveGame()">✖</div>
+      </div>
+    </div>
+    <div id = "questions">
+      <div id = "nav-bar">
+        <div id = "time-remaining-wrapper" class = "v-center">
+          <span style ="font-weight: bold">Time remaining:</span>
+          <div id = "time-remaining">01:00:00</div>
+        </div>
+        <button onclick="submitAnswer()" class = "v-center" id = "submit-answer-button">Submit</button>
+      </div>
+      <div id = "question-wrapper">
+        <!-- <div class = "question">
+          <h2 class = "question-title">Problem 1</h2>
+          <div class = "problem">What is 1 + 1?</div>
+          <input type="text" class="answer-input" id="answer-input" name="answer-input" maxlength="3" placeholder="Answer"><br>
+        </div> -->
+      </div>
+    </div>
+    <div id = "footer">© 2021 by 1egend</div>
+    <div id= "snackbar"></div>
+</body>
+</html>
