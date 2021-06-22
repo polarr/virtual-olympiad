@@ -4,7 +4,6 @@ const got = require('got');
 const http = require('http');
 const path = require('path');
 const cheerio = require('cheerio');
-const { clearLine } = require('readline');
 
 const app = express();
 const server = http.Server(app);
