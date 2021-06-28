@@ -4,7 +4,7 @@ const got = require('got');
 const http = require('http');
 const path = require('path');
 const cheerio = require('cheerio');
-const { clearLine } = require('readline');
+const { timeStamp } = require('console');
 
 const app = express();
 const server = http.Server(app);
@@ -37,13 +37,37 @@ function generateRoomCode(){
   }
 }
 
+function adjustingTimer(callback, interval) {
+  var that = this;
+  var expected, timeout;
+  this.interval = interval;
+
+  this.start = function() {
+      expected = Date.now() + this.interval;
+      timeout = setTimeout(step, this.interval);
+  }
+
+  this.stop = function() {
+      clearTimeout(timeout);
+  }
+
+  function step() {
+      var drift = Date.now() - expected;
+      if (drift > that.interval) {
+      }
+      callback();
+      expected += that.interval;
+      timeout = setTimeout(step, Math.max(0, that.interval - drift));
+  }
+}
+
 async function scrapeQuestion(test, year, problem, difficulty){
   const url = `https://artofproblemsolving.com/wiki/index.php/${year}_${test}`;
   try {
     let [{body: qHtml}, {body: aHtml}] = await Promise.all([got(url + "_Problems"), got(url + "_Answer_Key")]);
 
     let $ = cheerio.load(qHtml);
-    let question =  $(`h2:has(span[id="Problem_${problem}"])`).nextUntil('p:has(a), h2').map(function (i, el) {
+    let question =  $(`h2:has(span[id="Problem_${problem}"])`).nextUntil('p:has(a:contains("Solution")), h2').map(function (i, el) {
       return `<${$(this)['0'].name}>${$(this).html()}</${$(this)['0'].name}>`;
     }).toArray().join('');
 
@@ -174,15 +198,17 @@ class Game {
     this.players[id] = {
       id: id,
       name: name,
+      status: "Answering",
       answers: new Array(50),
-      incorrect: 0,
-      points: 0
+      time: 0,
+      correct: 0,
     }
 
     this.questionAmount = 10;
     this.sources = [0, 0, 0, 0];
 
     this.started = false;
+    this.timeLimit = 30;
   }
 
   async startGame(){
@@ -192,8 +218,27 @@ class Game {
     for (let i = 0; i < this.questions.length; ++i){
       this.displayQuestions.push({name: this.questions[i].name, problem: this.questions[i].problem});
     }
-    io.to(this.roomCode).emit('start-game', this.displayQuestions);
-    console.log('Started game in room ' + this.roomCode);
+    this.timeLeft = this.timeLimit * 60;
+    this.timer = new adjustingTimer(()=>{
+      --this.timeLeft;
+      if(this.timeLeft == 0){
+        this.requestEndGame();
+        this.timer.stop();
+        return;
+      }
+
+      /**
+      if (this.timeLeft % 20 == 0){
+        io.to(this.roomCode).emit('update-time-left', this.timeLeft);
+      }
+      */
+    }, 1000);
+    io.to(this.roomCode).emit('start-game', {questions: this.displayQuestions, time: this.timeLeft});
+    console.log('Started game in room ' + this.roomCode + ' with ' + this.timeLimit + ' minutes and ' + this.questionAmount + ' questions.');
+    for (let i = 0; i < this.questionAmount; ++i){
+      console.log("Q" + (i + 1) + ": " + this.displayQuestions[i].name)
+    }
+    this.timer.start();
   }
 
   // METHODS
@@ -201,9 +246,10 @@ class Game {
     this.players[id] = {
       id: id,
       name: name,
+      status: "Answering",
       answers: new Array(50),
-      incorrect: 0,
-      points: 0
+      time: 0,
+      correct: 0,
     }
   }
 
@@ -225,9 +271,21 @@ class Game {
     }
 
     this.updatePlayers();
+
+    let finished = true;
+    for (let i in this.players){
+      if (this.players[i].status !== "Submitted"){
+        finished = false;
+        break;
+      }
+    }
+
+    if (finished){
+      this.endGame();
+    }
   }
 
-  updateGameDetails(amount=false, sources=false){
+  updateGameDetails(amount=false, sources=false, timeLimit=false){
     if (amount){
       this.questionAmount = amount;
     }
@@ -236,22 +294,92 @@ class Game {
       this.sources = sources;
     }
 
-    io.to(this.roomCode).emit('update-game-details', {owner: this.owner, amount: this.questionAmount, sources: this.sources});
+    if (timeLimit){
+      this.timeLimit = timeLimit;
+    }
+
+    io.to(this.roomCode).emit('update-game-details', {owner: this.owner, amount: this.questionAmount, sources: this.sources, time: this.timeLimit});
   }
 
-  submit(id, answer){
+  submit(id, answers){
+    let p = this.players[id];
+    p.time = this.timeLimit * 60 - this.timeLeft;
+    p.status = "Submitted";
 
+    let n = [], a = [], l = [], clearedAns = [];
+    for (let i = 0; i < this.questionAmount; ++i){
+      let ans = answers[i].toUpperCase().replace(/\s+/g,'').replace(/^0+/, '');
+      clearedAns.push(ans);
+      let realAns = this.questions[i].answer.toUpperCase().replace(/^0+/, '');
+      if (ans === realAns){
+        ++p.correct;
+      }
+      n.push(this.questions[i].name.replace(/_/g, ' '));
+      a.push(realAns);
+      l.push(this.questions[i].link);
+    }
+
+    this.updatePlayers();
+    let finished = true;
+    for (let i in this.players){
+      if (this.players[i].status !== "Submitted"){
+        finished = false;
+        break;
+      }
+    }
+
+    if (finished){
+      this.endGame();
+    }
+
+    return {
+      time: p.time,
+      answers: clearedAns,
+      correct: p.correct,
+      names: n,
+      links: l,
+      solutions: a
+    };
   }
 
   updatePlayers(){
     let p = [];
     for (let i in this.players){
-      p.push({id: this.players[i].id, name: this.players[i].name});
+      p.push({id: this.players[i].id, name: this.players[i].name, status: this.players[i].status});
     }
     io.to(this.roomCode).emit('update-players', p);
   }
 
+  requestEndGame(){
+    io.to(this.roomCode).emit('request-finish-game');
+  }
+
+  endGame(){
+    this.timer.stop();
+    let results = [];
+    for (let i in this.players){
+      let p = {
+        name: this.players[i].name,
+        correct: this.players[i].correct,
+        time: this.players[i].time
+      }
+      results.push(p);
+    }
+    results.sort((a, b)=>{
+      if (a.correct == b.correct){
+        return a.time - b.time;
+      }
+
+      return b.correct - a.correct;
+    });
+    io.to(this.roomCode).emit('finish-game', {players: results, total: this.questionAmount});
+    this.end();
+  }
+
   end(){
+    if (this.timer){
+      this.timer.stop();
+    }
     io.to(this.roomCode).emit('end-game');
 
     var clients = io.sockets.adapter.rooms.get(this.roomCode);
@@ -285,6 +413,7 @@ io.on('connection', (socket) => {
     rooms[ROOM_CODE] = new Game(ROOM_CODE, socket.id, name, mode);
     socket.emit('create-room-success', {code: ROOM_CODE, mode: mode});
     rooms[ROOM_CODE].updatePlayers();
+    rooms[ROOM_CODE].updateGameDetails();
   });
   socket.on('request-join-room', ({name, code}) => {
     if (socket.id in sockets){
@@ -292,6 +421,10 @@ io.on('connection', (socket) => {
     }
     if (code in rooms){
       if (Object.keys(rooms[code].players).length < rooms[code].partyLimit){
+        if (rooms[code].started){
+          socket.emit('join-room-started');
+          return;
+        }
         socket.join(code);
         sockets[socket.id] = code;
         rooms[code].join(socket.id, name);
@@ -326,7 +459,28 @@ io.on('connection', (socket) => {
       return;
     }
 
-    rooms[sockets[socket.id]].updateGameDetails(amount, false);
+    rooms[sockets[socket.id]].updateGameDetails(amount);
+  });
+  socket.on('update-time-limit', (time) => {
+    if (!(socket.id in sockets) || socket.id != rooms[sockets[socket.id]].owner){
+      // Hacker
+      return;
+    }
+
+    if (!isNumber(time) || !Number.isInteger(parseFloat(time, 10))){
+      // Hacker
+      socket.emit('question-time-not-integer');
+      return;
+    }
+
+    let intX = parseInt(time, 10);
+    if (intX < 5|| intX > 180){
+      // Hacker
+      socket.emit('question-time-out-range');
+      return;
+    }
+
+    rooms[sockets[socket.id]].updateGameDetails(false, false, time);
   });
   socket.on('update-question-sources', (sources) => {
     if (!(socket.id in sockets) || socket.id != rooms[sockets[socket.id]].owner){
@@ -360,9 +514,14 @@ io.on('connection', (socket) => {
     }
 
     await rooms[sockets[socket.id]].startGame();
+    rooms[sockets[socket.id]].updatePlayers();
   });
-  socket.on('request-submit-answer', (answer) => {
+  socket.on('request-submit-answer', (answers) => {
     let THIS_ID = socket.id;
-    rooms[sockets[THIS_ID]].submit(THIS_ID, answer);
+    if (rooms[sockets[THIS_ID]].players[THIS_ID].status !== "Answering"){
+      return;
+    }
+    let sendData = rooms[sockets[THIS_ID]].submit(THIS_ID, answers);
+    socket.emit('submit-answer-success', sendData);
   });
 });

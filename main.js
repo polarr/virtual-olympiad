@@ -110,8 +110,8 @@ tsParticles.load("bg", {
 // GLOBALS
 var phase = 0; // 0 = menu, 1 = in room, 2 = in game
 var question = 1;
-var questions;
-var players;
+var localTimeLeft;
+var localTimer;
 
 function runSnackbar(msg) {
   let x = document.getElementById("snackbar");
@@ -125,6 +125,30 @@ function runSnackbar(msg) {
       window.clearTimeout(n);
   }
 } 
+
+function adjustingTimer(callback, interval) {
+  var that = this;
+  var expected, timeout;
+  this.interval = interval;
+
+  this.start = function() {
+      expected = Date.now() + this.interval;
+      timeout = setTimeout(step, this.interval);
+  }
+
+  this.stop = function() {
+      clearTimeout(timeout);
+  }
+
+  function step() {
+      var drift = Date.now() - expected;
+      if (drift > that.interval) {
+      }
+      callback();
+      expected += that.interval;
+      timeout = setTimeout(step, Math.max(0, that.interval - drift));
+  }
+}
 
 function elementDisplay(id, mode){
   document.getElementById(id).style.display = mode;
@@ -153,6 +177,8 @@ function toggleRoom(on = true){
 function toggleQuestions(on = true){
   if (on){
     elementDisplay("questions", "block");
+    elementDisplay("nav-bar", "block");
+    elementDisplay("results-wrapper", "none");
     return;
   }
 
@@ -176,6 +202,8 @@ function switchPhase(n){
       toggleMenu(false);
       toggleRoom(false);
       toggleQuestions();
+      document.getElementById("submit-answer-button").textContent = "Submit";
+      document.querySelector("#time-remaining-wrapper > span").textContent = "Time remaining:";
   }
 }
 
@@ -248,11 +276,42 @@ function changeQuestionAmount(input){
   document.getElementById("question-amount-input").value = document.getElementById("question-amount-slider").value;
 }
 
-function updateSlider(){
-  let slider = document.getElementById("question-amount-slider");
-  let value = (slider.value - slider.min)/(slider.max - slider.min) * 100;
-  slider.style.background = 'linear-gradient(to right, #0160e2 0%, #0160e2 ' + value + '%, #e9e8ee ' + value + '%, #e9e8ee 100%)';
+function changeTimeLimit(input){
+  if (input){
+    let oldValue = document.getElementById("time-limit-input").oldValue;
+    let x = document.getElementById("time-limit-input").value;
+    if (!isNumber(x) || !Number.isInteger(parseFloat(x, 10))){
+      runSnackbar("Time limit must be an integer");
+      socket.emit('update-time-limit', oldValue);
+      document.getElementById("time-limit-slider").value = oldValue;
+      document.getElementById("time-limit-input").value = oldValue;
+      return;
+    }
+
+    let intX = parseInt(x, 10);
+    if (intX < 5 || intX > 180){
+      runSnackbar("Time limit must be between 5 and 180 minutes");
+      socket.emit('update-question-amount', oldValue);
+      document.getElementById("time-limit-slider").value = oldValue;
+      document.getElementById("time-limit-input").value = oldValue;
+      return;
+    }
+
+    socket.emit('update-time-limit', intX);
+    document.getElementById("time-limit-slider").value = intX;
+    return;
+  }
+
+  socket.emit('update-time-limit', document.getElementById("time-limit-slider").value);
+  document.getElementById("time-limit-input").value = document.getElementById("time-limit-slider").value;
 }
+
+/**
+function updateSlider(that){
+  let value = (that.value - that.min)/(that.max - that.min) * 100;
+  that.style.background = 'linear-gradient(to right, #0160e2 0%, #0160e2 ' + value + '%, #e9e8ee ' + value + '%, #e9e8ee 100%)';
+}
+ */
 
 function changeSources(){
   let s = document.querySelectorAll(".question-sources > input");
@@ -317,14 +376,94 @@ function generateQuestion(number, content, name){
   questionInput.setAttribute("placeholder", "Answer");
   questionNode.appendChild(questionInput);
 
+  let questionSolution = document.createElement("SPAN");
+  questionSolution.className = "question-solution";
+  questionNode.appendChild(questionSolution);
+
   return questionNode;
 }
 
 function loadQuestions(questions){
   let questionWrapper = document.getElementById("question-wrapper");
+  questionWrapper.innerHTML = "";
   for (let i = 0; i < questions.length; ++i){
     let questionNode = generateQuestion(i + 1, questions[i].problem, "Problem " + (i + 1));
     questionWrapper.appendChild(questionNode);
+  }
+}
+
+function parseTime(time){
+  return `${Math.floor(time/3600)}:${Math.floor((time % 3600)/60).toLocaleString(undefined, {minimumIntegerDigits: 2, useGrouping:false})}:${(time % 60).toLocaleString(undefined, {minimumIntegerDigits: 2, useGrouping:false})}`;
+}
+
+function updateTimeLeft(time){
+  document.getElementById("time-remaining").textContent = parseTime(time);
+}
+
+function submitAnswer(){
+  localTimer.stop();
+  let ans = document.querySelectorAll(".answer-input");
+  let answers = [];
+  for (let i = 0; i < ans.length; ++i){
+    answers.push(ans[i].value);
+  }
+  socket.emit('request-submit-answer', answers);
+};
+
+function displayResults(results){
+  localTimeLeft = results.time;
+  document.querySelector("#time-remaining-wrapper > span").textContent = "Time Used:";
+
+  updateTimeLeft(localTimeLeft);
+  document.getElementById("submit-answer-button").textContent = results.correct + "/" + results.solutions.length;
+  document.getElementById("submit-answer-button").disabled = true;
+
+  let ansInputs = document.querySelectorAll(".answer-input");
+  for (let i = 0; i < ansInputs.length; ++i){
+    ansInputs[i].value = results.answers[i];
+    ansInputs[i].readOnly = true;
+  }
+
+  let sols = document.querySelectorAll(".question-solution");
+  for (let i = 0; i < sols.length; ++i){
+    sols[i].style = `color: ${results.answers[i] == results.solutions[i] ? "green":"red"}; margin-left: 5px`;
+    sols[i].textContent = "Answer: " + results.solutions[i];
+  }
+
+  let titles = document.querySelectorAll(".question-title");
+  for (let i = 0; i < titles.length; ++i){
+    let a = document.createElement('A');
+    a.href = results.links[i];
+    a.textContent = results.names[i];
+    titles[i].innerHTML = "";
+    titles[i].appendChild(a);
+  }
+}
+
+function finishGame(results){
+  elementDisplay("nav-bar", "none");
+  elementDisplay("results-wrapper", "block");
+  document.getElementById("question-wrapper").style.height = "calc(50vh - 10px)";
+
+  let resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = "";
+  for (let i = 0; i < results.players.length; ++i){
+    let playerDiv = document.createElement("DIV");
+    playerDiv.className = "player-result";
+
+    let nameDiv = document.createElement("SPAN");
+    nameDiv.className = "v-center";
+    nameDiv.textContent = "#" + (i + 1) + " " + results.players[i].name;
+    nameDiv.style = "float: left; font-weight: bold";
+    playerDiv.appendChild(nameDiv);
+
+    let statsDiv = document.createElement("SPAN");
+    statsDiv.className = "v-center";
+    statsDiv.textContent = "Time Used: " + parseTime(results.players[i].time) + " Score: " + results.players[i].correct + "/" + results.total;
+    statsDiv.style = "float: right;";
+    playerDiv.appendChild(statsDiv);
+
+    resultsDiv.appendChild(playerDiv);
   }
 }
 
@@ -333,9 +472,6 @@ socket.on('create-room-success', (info)=> {
   document.getElementById("room-code").textContent = info.code;
   document.getElementById("game-mode").textContent = info.mode;
   runSnackbar("Created room");
-
-  changeSources();
-  socket.emit('update-question-amount', document.getElementById("question-amount-slider").value);
 });
 
 socket.on('join-room-invalid', ()=> {
@@ -346,6 +482,11 @@ socket.on('join-room-invalid', ()=> {
 socket.on('join-room-exceed-party-limit', ()=> {
   switchPhase(0);
   runSnackbar("Maximum player limit reached");
+});
+
+socket.on('join-room-started', ()=> {
+  switchPhase(0);
+  runSnackbar("Room already started game");
 });
 
 socket.on('join-room-success', (info)=> {
@@ -381,7 +522,10 @@ socket.on('update-players', (players) => {
       for (let i = 0; i < k.length; ++i){
         k[i].disabled = false;
       }
-      document.querySelector("#room-info input[type='number']").readOnly = false;
+      let inputs = document.querySelectorAll("#room-info input[type='number']");
+      for (let i = 0; i < inputs.length; ++i){
+        inputs[i].readOnly = false
+      }
       document.getElementById("start-button-wrapper").style.display = "block";
     }
     else{
@@ -389,22 +533,50 @@ socket.on('update-players', (players) => {
       for (let i = 0; i < k.length; ++i){
         k[i].disabled = true;
       }
-      document.querySelector("#room-info input[type='number']").readOnly = true;
+      let inputs = document.querySelectorAll("#room-info input[type='number']");
+      for (let i = 0; i < inputs.length; ++i){
+        inputs[i].readOnly = true;
+      }
       document.getElementById("start-button-wrapper").style.display = "none";
     }
     
     return;
   }
 
+  if (phase == 2 || phase == 3){
+    let playersbar = document.getElementById("players-bar");
+    playersbar.innerHTML = "";
+    for (let i = 0; i < players.length; ++i){
+      let playerNode = document.createElement("DIV");
+      // playerNode.style = "width: clamp()";
+      playerNode.className = "nav-bar-items v-center";
+
+      let playerNameNode = document.createElement("SPAN");
+      playerNameNode.style = "font-weight: bold";
+      playerNameNode.textContent = players[i].name;
+
+      let playerStatusNode = document.createElement("DIV");
+      playerStatusNode.style = "margin-top: 5px; font-style: italic;";
+      playerStatusNode.textContent = players[i].status;
+
+      playerNode.appendChild(playerNameNode);
+      playerNode.appendChild(playerStatusNode);
+      playersbar.appendChild(playerNode);
+    }
+  }
 });
 
 socket.on('update-game-details', (details) => {
+  /**   
   if (socket.id == details.owner){
     return;
   }
-
+   */
   document.getElementById("question-amount-slider").value = details.amount;
   document.getElementById("question-amount-input").value = details.amount;
+
+  document.getElementById("time-limit-slider").value = details.time;
+  document.getElementById("time-limit-input").value = details.time;
 
   let s = document.querySelectorAll(".question-sources > input");
   for (let i = 0; i < s.length; ++i){
@@ -416,8 +588,50 @@ socket.on('starting-game', () => {
   runSnackbar("Generating questions, please wait");
 });
 
-socket.on('start-game', (questions) => {
+socket.on('start-game', (info) => {
   switchPhase(2);
   runSnackbar("Started Game");
-  loadQuestions(questions);
+  localTimeLeft = info.time;
+  localTimer = new adjustingTimer(()=> {
+    --localTimeLeft;
+    
+    updateTimeLeft(localTimeLeft);
+
+    if (localTimeLeft == 180){
+      runSnackbar("3 minutes remaining");
+    }
+
+    if (localTimeLeft == 0){
+      localTimer.stop();
+      return;
+    }
+  }, 1000);
+  loadQuestions(info.questions);
+  updateTimeLeft(info.time);
+  localTimer.start();
+});
+
+/**
+socket.on('update-time-left', (syncTime)=>{
+  if (phase != 2){
+    return;
+  }
+  localTimeLeft = syncTime;
+});
+*/
+
+socket.on('submit-answer-success', (results)=>{
+  phase = 3;
+  runSnackbar("Submitted answers");
+  displayResults(results);
+});
+
+socket.on('request-finish-game', ()=>{
+  submitAnswer();
+});
+
+socket.on('finish-game', (results)=>{
+  phase = 3;
+  runSnackbar("Game ended");
+  finishGame(results);
 });
