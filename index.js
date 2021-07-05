@@ -107,19 +107,19 @@ function questionDifficulty(x){
   switch(x[0]){
     case "AMC_8":
       diff = 1 + x[2]/20;
-      diff *= 1 + Math.max(0, x[1] - 2000)/100;
+      diff += Math.max(0, x[1] - 2000)/80;
     break;
     case "AMC_10": case "AMC_10A": case "AMC_10B":
       diff = 1 + Math.max(0, x[2] - 5)/10;
-      diff *= 1 + Math.max(0, x[1] - 2000)/20;
+      diff += 0.3 * Math.max(0, x[1] - 2000)/20;
     break;
     case "AMC_12": case "AMC_12A": case "AMC_12B":
       diff = 1.5 + Math.max(0, x[2] - 5)/10;  
-      diff *= 1 + Math.max(0, x[1] - 2000)/15;   
+      diff += 0.4 * Math.max(0, x[1] - 2000)/20;   
     break;
     case "AIME": case "AIME_I": case "AIME_II":
       diff = 2.75 + x[2]/4;
-      diff *= 1 + Math.max(0, x[1] - 2000)/30;
+      diff += 0.5 * Math.max(0, x[1] - 2000)/20;
     break;
   }
 
