@@ -398,9 +398,7 @@ class Game {
 
 io.on('connection', (socket) => {
   socket.on('disconnect', () => {
-    if (socket.id in sockets){
-      rooms[sockets[socket.id]].kick(socket.id);
-    }
+    rooms[sockets[socket.id]]?.kick(socket.id);
   });
   socket.on('request-create-room', ({name, mode}) => {
     if (socket.id in sockets){
@@ -440,7 +438,7 @@ io.on('connection', (socket) => {
     }
   });
   socket.on('update-question-amount', (amount) => {
-    if (!(socket.id in sockets) || socket.id != rooms[sockets[socket.id]].owner){
+    if (socket.id != rooms[sockets[socket.id]]?.owner){
       // Hacker
       return;
     }
@@ -461,7 +459,7 @@ io.on('connection', (socket) => {
     rooms[sockets[socket.id]].updateGameDetails(amount);
   });
   socket.on('update-time-limit', (time) => {
-    if (!(socket.id in sockets) || socket.id != rooms[sockets[socket.id]].owner){
+    if (socket.id != rooms[sockets[socket.id]]?.owner){
       // Hacker
       return;
     }
@@ -482,7 +480,7 @@ io.on('connection', (socket) => {
     rooms[sockets[socket.id]].updateGameDetails(false, false, time);
   });
   socket.on('update-question-sources', (sources) => {
-    if (!(socket.id in sockets) || socket.id != rooms[sockets[socket.id]].owner){
+    if (socket.id != rooms[sockets[socket.id]]?.owner){
       // Hacker
       return;
     }
@@ -494,16 +492,11 @@ io.on('connection', (socket) => {
     rooms[sockets[socket.id]].updateGameDetails(false, sources);
   });
   socket.on('request-leave-room', () => {
-    if (!(socket.id in sockets)){
-      // Hacker
-      return;
-    }
-
-    rooms[sockets[socket.id]].kick(socket.id);
+    rooms[sockets[socket.id]].kick?.(socket.id);
     socket.emit('leave-room-success');
   });
   socket.on('request-start-game', async () => {
-    if (!(socket.id in sockets) || socket.id != rooms[sockets[socket.id]].owner){
+    if (socket.id != rooms[sockets[socket.id]]?.owner){
       return;
     }
 
@@ -517,7 +510,7 @@ io.on('connection', (socket) => {
   });
   socket.on('request-submit-answer', (answers) => {
     let THIS_ID = socket.id;
-    if (rooms[sockets[THIS_ID]].players[THIS_ID].status !== "Answering"){
+    if (rooms[sockets[THIS_ID]]?.players[THIS_ID]?.status !== "Answering"){
       return;
     }
     let sendData = rooms[sockets[THIS_ID]].submit(THIS_ID, answers);
