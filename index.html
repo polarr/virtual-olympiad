@@ -27,7 +27,11 @@
             font-family: sans-serif;
             margin: 0;
         }
-
+        
+        a {
+          text-decoration: none;
+        }
+        
         #bg{
           position: absolute;
           width: 100%;
@@ -446,6 +450,14 @@
             text-align: center;
         }
 
+        #help{
+            position: absolute;
+            right: 0px;
+            bottom: 0px;
+            padding: 5px;
+            text-align: center;
+        }
+
         /* MOBILE */
         @media only screen and (max-width: 1000px) {
           #description {
@@ -480,8 +492,6 @@
         </select><br>
         <button id = "create-room-buttom" onclick="createRoom()">Create Room</button>
       </div>
-    </div>
-    <div id = "description">
     </div>
     <div id = "room">
       <table id = "room-players">
@@ -558,6 +568,7 @@
       </div>
     </div>
     <div id = "footer">© 2021 by 1egend</div>
+    <div id = "help"><a href="https://github.com/1e9end/virtual-olympiad#readme">How to play</a></div>
     <div id= "snackbar"></div>
 </body>
 </html>

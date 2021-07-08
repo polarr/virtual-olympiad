@@ -157,12 +157,10 @@ function elementDisplay(id, mode){
 function toggleMenu(on = true){
   if (on){
     elementDisplay("menu", "block");
-    elementDisplay("description", "block");
     return;
   }
 
   elementDisplay("menu", "none");
-  elementDisplay("description", "none");
 }
 
 function toggleRoom(on = true){
