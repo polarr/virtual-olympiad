@@ -417,17 +417,17 @@ io.on('connection', (socket) => {
       return;
     }
     if (code in rooms){
-      if (Object.keys(rooms[code].players).length < rooms[code].partyLimit){
-        if (rooms[code].started){
-          socket.emit('join-room-started');
-          return;
-        }
+      let room = rooms[code];
+      if (Object.keys(room.players).length < room.partyLimit){
         socket.join(code);
         sockets[socket.id] = code;
-        rooms[code].join(socket.id, name);
-        socket.emit('join-room-success', {code: code, mode: rooms[code].mode});
-        rooms[code].updatePlayers();
-        rooms[code].updateGameDetails();
+        room.join(socket.id, name);
+        socket.emit('join-room-success', {code: code, mode: room.mode});
+        room.updateGameDetails();
+        if (room.started){
+          socket.emit('start-game', {questions: room.displayQuestions, time: room.timeLeft});
+        }
+        room.updatePlayers();
       }
       else{
         socket.emit('join-room-exceed-party-limit');
@@ -492,7 +492,7 @@ io.on('connection', (socket) => {
     rooms[sockets[socket.id]].updateGameDetails(false, sources);
   });
   socket.on('request-leave-room', () => {
-    rooms[sockets[socket.id]].kick?.(socket.id);
+    rooms[sockets[socket.id]]?.kick(socket.id);
     socket.emit('leave-room-success');
   });
   socket.on('request-start-game', async () => {
