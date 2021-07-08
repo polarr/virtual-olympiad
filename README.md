@@ -5,7 +5,7 @@ Host online contest math competitions/practice with questions from the AMC, AIME
 ![image](https://user-images.githubusercontent.com/51487023/124961572-a5637780-dfeb-11eb-9580-b77df2e355b2.png)
 
 First, enter a name in the *Enter a name* input box. It can be 1-12 characters long. <br>
-To create a room, simply select your game mode from the dropdown and click *Create Room*! (Currently only game mode is Normal but more will be added soon) d<br>
+To create a room, simply select your game mode from the dropdown and click *Create Room*! (Currently only game mode is Normal but more will be added soon) <br>
 To join a room, paste the room code into the *Code* input box and click *Join Room*!
 
 ## Selecting Game Details
