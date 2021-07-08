@@ -289,7 +289,7 @@ function changeTimeLimit(input){
     let intX = parseInt(x, 10);
     if (intX < 5 || intX > 180){
       runSnackbar("Time limit must be between 5 and 180 minutes");
-      socket.emit('update-question-amount', oldValue);
+      socket.emit('update-time-limit', oldValue);
       document.getElementById("time-limit-slider").value = oldValue;
       document.getElementById("time-limit-input").value = oldValue;
       return;
