@@ -307,9 +307,9 @@ class Game {
 
     let n = [], a = [], l = [], clearedAns = [];
     for (let i = 0; i < this.questionAmount; ++i){
-      let ans = answers[i].toUpperCase().replace(/\s+/g,'').replace(/^0+/, '');
+      let ans = answers[i].toUpperCase().replace(/\s+/g,'').replace(/^0+(?=\d)/, '');
       clearedAns.push(ans);
-      let realAns = this.questions[i].answer.toUpperCase().replace(/^0+/, '');
+      let realAns = this.questions[i].answer.toUpperCase().replace(/^0+(?=\d)/, '');
       if (ans === realAns){
         ++p.correct;
       }

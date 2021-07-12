@@ -432,6 +432,7 @@ function displayResults(results){
   for (let i = 0; i < titles.length; ++i){
     let a = document.createElement('A');
     a.href = results.links[i];
+    a.target = "_blank";
     a.textContent = results.names[i];
     titles[i].innerHTML = "";
     titles[i].appendChild(a);
