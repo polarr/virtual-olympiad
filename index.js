@@ -9,7 +9,7 @@ const app = express();
 const server = http.Server(app);
 const io = socketIO(server);
 
-const port = 4000;
+const port = 80;
 
 app.set('port', port);
 
