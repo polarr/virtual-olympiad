@@ -1,0 +1,19 @@
+$main-blue: #0160e2;
+$hover-blue: #0140e2;
+$background-grey: #282c34;
+$border-grey: #D6D9DC;
+$fill-grey: #f1f2f3;
+$background-color: #282c34;
+
+.horizontal-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vertical-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

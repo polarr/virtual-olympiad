@@ -1,0 +1,227 @@
+@import 'assets/variables';
+
+.lobby {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    width: max(700px, 50vw);
+    height: 100vh;
+    padding: 10px;
+
+    background-color: #fff;
+    font-size: 1em;
+    color:#000;
+}
+
+.lobby-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    height: 50px;
+
+    .lobby-logo {
+        height: 100%;
+    }
+
+    .lobby-icons {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+
+        a {
+            display: flex;
+            align-items: center;
+
+            &:hover{
+                cursor: pointer;
+            }
+        }
+
+        img {
+            width: 16px;
+            height: 16px;
+            margin-right: 10px;
+        }
+
+        .fa-question-circle {
+            color: #000;
+        }
+    }
+}
+
+.lobby-content {
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+    padding-top: 30px;
+
+    overflow-y: auto;
+}
+
+.loading-exam {
+    margin: auto;
+}
+
+.lobby-title {
+    display: flex;
+    align-items: flex-start;
+
+    font-size: 1.5em;
+    font-weight: bold;
+    padding-left: 20px;
+    margin: 20px 0;
+
+    border-left: 2px solid $main-blue;
+}
+
+.lobby-players {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    height: 300px;
+    width: 50%;
+}
+
+.lobby-player-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin: 2px 0;
+    width: min(400px, 100%);
+    height: calc(25% - 4px);
+
+    background-color: $fill-grey;
+    border-radius: 5px;
+    word-break: break-all;
+
+    &:first-of-type {
+        font-weight: bold;
+    }
+
+    &.isUser {
+        border: 2px solid $main-blue;
+    }
+}
+
+@mixin setting-box($includeMargin: false){
+    @if $includeMargin != 0 {
+        margin: 5px;
+    }
+    padding: 10px 5px;
+    background-color: $fill-grey;
+    border-radius: 5px;
+}
+
+.lobby-admin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: 50%;
+
+    .lobby-info {
+        div {
+            @include setting-box(true);
+        }
+    }
+
+    .player-settings {
+        display: flex;
+        flex-direction: column;
+        @include setting-box;
+    }
+}
+
+.lobby-settings {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin: 10px;
+}
+
+.lobby-settings-panel {
+    align-self: stretch;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    @include setting-box(true);
+}
+
+.lobby-slider-wrapper {
+    display: flex;
+
+    justify-content: center;
+
+    > input {
+        margin: 5px;
+    }
+
+    > input[type="number"]{
+        width: 48px;
+    }
+
+    > input[type="range"]{
+        max-width: 200px;
+    }
+}
+
+.lobby-test-sources, .lobby-exam-settings {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.lobby-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: auto;
+
+    .leave-button {
+        margin: 5px;
+        padding: 10px 25px;
+
+        background-color: $main-blue;
+        border: none;
+        color: white;
+        font-size: 1em;
+
+        transition: 0.2s ease-in;
+
+        &:hover {
+            background-color: $hover-blue;
+            cursor: pointer;
+        }
+    }
+
+
+    .start-button {
+        margin: 5px;
+        padding: 10px 25px;
+
+        background-color: $main-blue;
+        border: none;
+        color: white;
+        font-size: 1em;
+
+        transition: 0.2s ease-in;
+
+        &:hover {
+            background-color: $hover-blue;
+            cursor: pointer;
+        }
+    }
+}
