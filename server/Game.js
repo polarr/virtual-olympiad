@@ -73,9 +73,7 @@ class Game {
             avaliableTests: tests.map(test => {
                 return test.name.replace("_", " ");
             }),
-            tests: (new Array(tests.length)).map(test => {
-                return false;
-            }),
+            tests: (new Array(tests.length)).fill(false),
             sortExam: true
         };
 

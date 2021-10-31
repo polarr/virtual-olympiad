@@ -14,7 +14,7 @@ import io from 'socket.io-client';
 function App() {
   const [socket, setSocket] = useState(null);
   const [page, setPage] = useState(0);
-  
+
   useEffect(()=> {
     const newSocket = io();
     setSocket(newSocket);
@@ -41,8 +41,8 @@ function App() {
 
     return ()=> {
       socket.off("page-menu", joinMenu);
-      socket.on("page-lobby", joinLobby);
-      socket.on("page-exam", joinGame);
+      socket.off("page-lobby", joinLobby);
+      socket.off("page-exam", joinGame);
     };
   }, [socket]);
 
