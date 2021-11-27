@@ -85,9 +85,13 @@ class Game {
         this.players[socket.id] = new Player(socket.id, name, 0, [], 0, 0);
 
         socket.emit('page-lobby');
-        this.emitPlayers();
-        this.emitAdmin();
-        this.emitSettings();
+
+        setTimeout(()=> {
+          this.emitPlayers();
+          this.emitAdmin();
+          this.emitSettings();
+        }, 100);
+        
     }
 
     emit(title, info){
@@ -103,15 +107,20 @@ class Game {
 
             if (this.started){
                 socket.emit('page-exam');
-                socket.emit('exam-details', { problems: this.exam.clientProblems, time: this.exam.timeLeft });
+                setTimeout(()=> {
+                  this.emitPlayers();
+                  socket.emit('exam-details', { problems: this.exam.clientProblems, time: this.exam.timeLeft });
+                }, 100);
+                
             }
             else {
                 socket.emit('page-lobby');
-                this.emitAdmin();
-                this.emitSettings();
+                setTimeout(()=> {
+                  this.emitPlayers();
+                  this.emitAdmin();
+                  this.emitSettings();
+                }, 100);
             }
-
-            this.emitPlayers();
 
             return true;
         }
