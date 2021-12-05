@@ -1,13 +1,12 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "build": "cd ../client && npm install && npm run build"
+    "build": "cd ../client && pnpm install && pnpm build"
   },
   "keywords": [],
   "author": "",
@@ -16,8 +15,12 @@
     "cheerio": "^1.0.0-rc.10",
     "express": "^4.17.1",
     "got": "^11.8.2",
+    "isomorphic-dompurify": "^0.16.0",
     "lodash": "^4.17.21",
-    "node": "^17.0.1",
     "socket.io": "^4.2.0"
+  },
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^4.17.13"
   }
 }

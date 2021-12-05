@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import DOMPurify from 'dompurify';
 
 function PlayerBox({socket, player}) {
     return (
@@ -38,7 +37,7 @@ function Problem({index, question, response, onChange, submitted, solution}) {
                     <div className = "problem-tooltip-name">{solution?.name}</div>
                 </a>:""
             }</div>
-            <div className = "problem-question" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(question)}}></div>
+            <div className = "problem-question" dangerouslySetInnerHTML={{__html: question}}></div>
             <div className = "horizontal-flex"><input type="text" className ="problem-input" id={`problem-input-${index + 1}`} name="problem-input" maxlength="3" placeholder="Answer" value = {response} onChange = {e => onChange(index, e.target.value)}/>
             {submitted ? <div className = "problem-answer" style={{backgroundColor: response == solution?.answer ? "#009412":"#ff0000"}}>{solution?.answer}</div>:""}
             </div>

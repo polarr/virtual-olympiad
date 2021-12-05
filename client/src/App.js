@@ -7,7 +7,6 @@ import Lobby from './Lobby.js';
 import Exam from './Exam.js';
 import Menu from './Menu.js';
 
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import React, {useState, useEffect} from 'react';
 import io from 'socket.io-client';
 

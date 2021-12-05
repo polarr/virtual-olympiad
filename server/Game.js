@@ -70,8 +70,8 @@ class Game {
         this.settings = {
             amount: 10,
             timeLimit: 30,
-            avaliableTests: tests.map(test => {
-                return test.name.replace("_", " ");
+            avaliableTests: Object.entries(tests).map(test => {
+                return test[1].displayName;
             }),
             tests: (new Array(tests.length)).fill(false),
             sortExam: true
@@ -85,13 +85,9 @@ class Game {
         this.players[socket.id] = new Player(socket.id, name, 0, [], 0, 0);
 
         socket.emit('page-lobby');
-
-        setTimeout(()=> {
-          this.emitPlayers();
-          this.emitAdmin();
-          this.emitSettings();
-        }, 100);
-        
+        this.emitPlayers();
+        this.emitAdmin();
+        this.emitSettings();
     }
 
     emit(title, info){
@@ -107,20 +103,15 @@ class Game {
 
             if (this.started){
                 socket.emit('page-exam');
-                setTimeout(()=> {
-                  this.emitPlayers();
-                  socket.emit('exam-details', { problems: this.exam.clientProblems, time: this.exam.timeLeft });
-                }, 100);
-                
+                socket.emit('exam-details', { problems: this.exam.clientProblems, time: this.exam.timeLeft });
             }
             else {
                 socket.emit('page-lobby');
-                setTimeout(()=> {
-                  this.emitPlayers();
-                  this.emitAdmin();
-                  this.emitSettings();
-                }, 100);
+                this.emitAdmin();
+                this.emitSettings();
             }
+
+            this.emitPlayers();
 
             return true;
         }
