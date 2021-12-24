@@ -46,7 +46,7 @@ function Menu({socket}) {
 
     return (
         <section className = "menu">
-            <p className = "menu-title"><img className = "menu-logo" src="/logo/vo_svg_logo_vertical.svg" alt="Virtual Olympiad"/></p>
+            <p className = "menu-title"><img className = "menu-logo" src="assets/vo_svg_logo_vertical.svg" alt="Virtual Olympiad"/></p>
             <input type="text" className = "name-input" name="name-input" minLength = "1" maxLength="16" placeholder="Enter a name" value={name} onInput={e => setName(e.target.value)}/>
             <section className = "menu-settings">
                 <div className = "menu-selector">
