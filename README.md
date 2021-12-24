@@ -1,5 +1,7 @@
 > Site still in development
 
+![Virtual Olympiad Logo](./client/public/assets/vo_png_logo_horizontal.png)
+
 # Virtual Olympiad
 
 ### Online Multiplayer Mock Competitions for Math
