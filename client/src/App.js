@@ -1,7 +1,7 @@
-import './App.scss';
-import './Menu.scss';
-import './Lobby.scss';
-import './Exam.scss';
+import './styles/App.scss';
+import './styles/Menu.scss';
+import './styles/Lobby.scss';
+import './styles/Exam.scss';
 
 import Lobby from './Lobby.js';
 import Exam from './Exam.js';

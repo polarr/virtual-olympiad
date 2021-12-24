@@ -1,9 +1,13 @@
-import {tests, fetchProblems} from './scrape.js';
-import _ from 'lodash';
-const {pick} = _;
+import { tests, fetchProblems } from "./scrape.js";
+import _ from "lodash";
+const { pick } = _;
 
 function isInt(str) {
-    return !isNaN(str) && !isNaN(parseFloat(str)) && Number.isInteger(parseFloat(str, 10));
+    return (
+        !isNaN(str) &&
+        !isNaN(parseFloat(str)) &&
+        Number.isInteger(parseFloat(str, 10))
+    );
 }
 
 class AdjustingTimer {
@@ -21,7 +25,10 @@ class AdjustingTimer {
 
         this.callback();
         this.expected += this.interval;
-        this.timeout = setTimeout(this.step.bind(this), Math.max(0, this.interval - drift));
+        this.timeout = setTimeout(
+            this.step.bind(this),
+            Math.max(0, this.interval - drift)
+        );
     }
 
     start() {
@@ -35,7 +42,7 @@ class AdjustingTimer {
 }
 
 class Player {
-    constructor (id, name, status, answers, time, score){
+    constructor(id, name, status, answers, time, score) {
         this.id = id;
         this.name = name;
         this.status = status;
@@ -44,12 +51,17 @@ class Player {
         this.score = score;
     }
 
-    clientInfo(){
-        return {id: this.id, name: this.name, status: this.status};
+    clientInfo() {
+        return { id: this.id, name: this.name, status: this.status };
     }
 
-    clientResults(){
-        return {id: this.id, name: this.name, score: this.score, time: this.time};
+    clientResults() {
+        return {
+            id: this.id,
+            name: this.name,
+            score: this.score,
+            time: this.time,
+        };
     }
 }
 
@@ -70,65 +82,77 @@ class Game {
         this.settings = {
             amount: 10,
             timeLimit: 30,
-            avaliableTests: Object.entries(tests).map(test => {
-                return test[1].displayName;
+            avaliableTests: Object.entries(tests).map((test) => {
+                return test[1].name;
             }),
-            tests: (new Array(tests.length)).fill(false),
-            sortExam: true
+            tests: new Array(Object.keys(tests).length).fill(false),
+            sortExam: true,
         };
 
         this.started = false;
         this.exam = {
-            problems: [], clientProblems: [], answers: [], timeLeft: 0, timer: null
+            problems: [],
+            clientProblems: [],
+            answers: [],
+            timeLeft: 0,
+            timer: null,
         };
 
         this.players[socket.id] = new Player(socket.id, name, 0, [], 0, 0);
 
-        socket.emit('page-lobby');
-        this.emitPlayers();
-        this.emitAdmin();
-        this.emitSettings();
+        socket.emit("page-lobby");
+
+        setTimeout(() => {
+            this.emitPlayers();
+            this.emitAdmin();
+            this.emitSettings();
+        }, 100);
     }
 
-    emit(title, info){
+    emit(title, info) {
         this.io.to(this.code).emit(title, info);
     }
 
     join(socket, name, code) {
         if (Object.keys(this.players).length < this.admin.playerLimit) {
-            const {id} = socket;
+            const { id } = socket;
 
             socket.join(code);
             this.players[id] = new Player(id, name, 0, [], 0, 0);
 
-            if (this.started){
-                socket.emit('page-exam');
-                socket.emit('exam-details', { problems: this.exam.clientProblems, time: this.exam.timeLeft });
+            if (this.started) {
+                socket.emit("page-exam");
+                setTimeout(() => {
+                    this.emitPlayers();
+                    socket.emit("exam-details", {
+                        problems: this.exam.clientProblems,
+                        time: this.exam.timeLeft,
+                    });
+                }, 100);
+            } else {
+                socket.emit("page-lobby");
+                setTimeout(() => {
+                    this.emitPlayers();
+                    this.emitAdmin();
+                    this.emitSettings();
+                }, 100);
             }
-            else {
-                socket.emit('page-lobby');
-                this.emitAdmin();
-                this.emitSettings();
-            }
-
-            this.emitPlayers();
 
             return true;
-        }
-        else {
-            socket.emit('join-game-exceed-party-limit');
+        } else {
+            socket.emit("join-game-exceed-party-limit");
             return false;
         }
     }
 
     kick(socket) {
-        const {id} = socket;
+        const { id } = socket;
         let client = this.io.sockets.sockets.get(id);
         if (client) {
             client.leave(this.code);
         }
 
-        socket.emit('page-menu');
+        socket.emit("page-menu");
         delete this.players[id];
         if (Object.keys(this.players).length == 0) {
             this.end();
@@ -151,33 +175,37 @@ class Game {
 
     emitPlayers() {
         let p = [];
-        for (let i in this.players){
+        for (let i in this.players) {
             p.push(this.players[i].clientInfo());
         }
 
-        this.emit('update-players', p);
+        this.emit("update-players", p);
     }
 
-    emitAdmin(){
-        this.emit('update-admin', {...this.admin, code: this.code, mode: this.mode});
+    emitAdmin() {
+        this.emit("update-admin", {
+            ...this.admin,
+            code: this.code,
+            mode: this.mode,
+        });
     }
 
-    emitSettings(){
-        this.emit('update-settings', this.settings);
+    emitSettings() {
+        this.emit("update-settings", this.settings);
     }
 
-    updateAdmin(socket, playerSettingsAuth, playerLimit){
-        if (this.started || socket.id != this.owner){
+    updateAdmin(socket, playerSettingsAuth, playerLimit) {
+        if (this.started || socket.id != this.owner) {
             return;
         }
 
-        if (typeof playerSettingsAuth == "boolean"){
+        if (typeof playerSettingsAuth == "boolean") {
             this.admin.playerSettingsAuth = playerSettingsAuth;
         }
 
-        if (isInt(playerLimit)){
+        if (isInt(playerLimit)) {
             let l = parseInt(playerLimit, 10);
-            if (l >= 1 && l >= Object.keys(this.players).length && l <= 4){
+            if (l >= 1 && l >= Object.keys(this.players).length && l <= 4) {
                 this.admin.playerLimit = playerLimit;
             }
         }
@@ -186,7 +214,10 @@ class Game {
     }
 
     updateSettings(socket, amount, time, t, sortExam) {
-        if ((!this.admin.playerSettingsAuth && socket.id !== this.owner) || this.started){
+        if (
+            (!this.admin.playerSettingsAuth && socket.id !== this.owner) ||
+            this.started
+        ) {
             return;
         }
 
@@ -205,12 +236,12 @@ class Game {
         }
 
         if (t?.length == this.settings.tests.length) {
-            this.settings.tests = t.map(test => {
+            this.settings.tests = t.map((test) => {
                 return !!test;
             });
         }
 
-        if (typeof sortExam == "boolean"){
+        if (typeof sortExam == "boolean") {
             this.settings.sortExam = sortExam;
         }
 
@@ -218,47 +249,62 @@ class Game {
     }
 
     async startGame(socket) {
-        if (this.started || socket.id != this.owner){
+        if (this.started || socket.id != this.owner) {
             return;
         }
 
         let parsedTests = [];
-        for (let i = 0; i < this.settings.tests.length; ++i){
-            if (this.settings.tests[i]){
+        for (let i = 0; i < this.settings.tests.length; ++i) {
+            if (this.settings.tests[i]) {
                 parsedTests.push(i);
             }
         }
 
-        if (parsedTests.length < 1){
+        if (parsedTests.length < 1) {
             socket.emit("error-test-length-positive");
             return;
         }
 
         this.started = true;
-        this.emit('starting-game');
+        this.emit("starting-game");
 
         this.exam.timeLeft = this.settings.timeLimit * 60;
-        this.exam.problems = await fetchProblems(this.settings.amount, parsedTests, this.settings.sortExam);
+        this.exam.problems = await fetchProblems(
+            this.settings.amount,
+            parsedTests,
+            this.settings.sortExam
+        );
 
-        this.exam.clientProblems = this.exam.problems.map(el => {
+        this.exam.clientProblems = this.exam.problems.map((el) => {
             return el.problem;
         });
-        this.exam.solutions = this.exam.problems.map(el => {
+        this.exam.solutions = this.exam.problems.map((el) => {
             return pick(el, ["name", "answer", "link"]);
         });
 
-        this.emit('page-exam');
-        this.emit('exam-details', { problems: this.exam.clientProblems, time: this.exam.timeLeft });
+        this.emit("page-exam");
+        this.emit("exam-details", {
+            problems: this.exam.clientProblems,
+            time: this.exam.timeLeft,
+        });
         this.timer = new AdjustingTimer(() => {
             --this.exam.timeLeft;
             if (this.exam.timeLeft <= 0) {
-                this.emit('force-submit-exam');
+                this.emit("force-submit-exam");
                 this.timer.stop();
             }
         }, 1000);
 
         /*Log game creation*/
-        console.log('Started game in room ' + this.code + ' with ' + this.settings.timeLimit + ' minutes and ' + this.settings.amount + ' problems.');
+        console.log(
+            "Started game in room " +
+                this.code +
+                " with " +
+                this.settings.timeLimit +
+                " minutes and " +
+                this.settings.amount +
+                " problems."
+        );
         for (let i = 0; i < this.exam.problems.length; ++i) {
             console.log("Q" + (i + 1) + ": " + this.exam.problems[i].name);
         }
@@ -277,22 +323,25 @@ class Game {
         p.time = this.settings.timeLimit * 60 - this.exam.timeLeft;
         p.status = 1;
 
-        let formatRes = response.map((el, i) =>{
-            let {answer} = this.exam.problems[i];
-            let res = el?.toUpperCase().replace(/\s+/g, '').replace(/^0+(?=\d)/, '');
+        let formatRes = response.map((el, i) => {
+            let { answer } = this.exam.problems[i];
+            let res = el
+                ?.toUpperCase()
+                .replace(/\s+/g, "")
+                .replace(/^0+(?=\d)/, "");
 
-            if (res === answer){
+            if (res === answer) {
                 ++p.score;
             }
 
             return res;
         });
 
-        socket.emit('submit-exam-success', {
+        socket.emit("submit-exam-success", {
             time: p.time,
             response: formatRes,
             score: p.score,
-            solutions: this.exam.solutions
+            solutions: this.exam.solutions,
         });
         this.emitPlayers();
 
@@ -317,7 +366,7 @@ class Game {
         this.timer?.stop();
 
         let results = [];
-        for (let i in this.players){
+        for (let i in this.players) {
             results.push(this.players[i].clientResults());
         }
 
@@ -329,13 +378,13 @@ class Game {
             return b.score - a.score;
         });
 
-        this.emit('finish-game', { results: results });
+        this.emit("finish-game", { results: results });
         this.end();
     }
 
     end() {
         this.timer?.stop();
-        this.emit('end-game');
+        this.emit("end-game");
 
         let clients = this.io.sockets.adapter.rooms.get(this.code);
         if (clients) {

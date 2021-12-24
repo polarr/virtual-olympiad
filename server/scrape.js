@@ -3,9 +3,9 @@ import got from 'got';
 import DOMPurify from 'isomorphic-dompurify';
 
 const tests = {
-    "AMC_8": {
-        name: "AMC_8",
-        displayName: "AMC 8",
+    "AMC 8": {
+        name: "AMC 8",
+        urlName: "AMC_8",
         type: 'choice',
         yearRange: [1999, 2020],
         problemRange: [1, 25],
@@ -14,9 +14,9 @@ const tests = {
             year: 0.02
         }
     },
-    "AMC_10": {
-        name: "AMC_10",
-        displayName: "AMC 10",
+    "AMC 10": {
+        name: "AMC 10",
+        urlName: "AMC_10",
         type: 'choice',
         modifiers: ["A", "B"],
         yearRange: [2002, 2021],
@@ -26,9 +26,9 @@ const tests = {
             year: 0.015
         }
     },
-    "AMC_12": {
-        name: "AMC_12",
-        displayName: "AMC 12",
+    "AMC 12": {
+        name: "AMC 12",
+        urlName: "AMC_12",
         type: 'choice',
         modifiers: ["A", "B"],
         yearRange: [2002, 2021],
@@ -38,9 +38,9 @@ const tests = {
             year: 0.02
         }
     },
-    "AIME_": {
-        name: "AIME_",
-        displayName: "AIME",
+    "AIME": {
+        name: "AIME",
+        urlName: "AIME_",
         type: 'answer',
         modifiers: ["I", "II"],
         yearRange: [2000, 2021],
@@ -80,8 +80,8 @@ function problemDifficulty(t, year, problem) {
     return diff;
 }
 
-async function scrapeProblem({test, year, problem, difficulty}) {
-    const url = `https://artofproblemsolving.com/wiki/index.php/${year}_${test}`;
+async function scrapeProblem({test, modifier, year, problem, difficulty}) {
+    const url = `https://artofproblemsolving.com/wiki/index.php/${year}_${tests[test].urlName}${modifier}`;
     try {
         const [{ body: PHTML }, { body: AHTML }] = await Promise.all([got(url + "_Problems"), got(url + "_Answer_Key")]);
 
@@ -98,7 +98,7 @@ async function scrapeProblem({test, year, problem, difficulty}) {
         const answer = $(`div[class="mw-parser-output"] > ol > li:eq(${problem - 1})`).text();
 
         return {
-            name: `${year} ${test} Problem ${problem}`.replace(/_/g, ' '),
+            name: `${year} ${tests[test].name} ${modifier} Problem ${problem}`,
             link: url + `_Problems/Problem_${problem}`,
             problem: DOMPurify.sanitize(p.replaceAll(`src="//`, `src="https://`), {FORBID_TAGS: ['a']}),
             answer: answer.toUpperCase().replace(/^0+(?=\d)/, ''),
@@ -114,7 +114,8 @@ function generateProblem(t, check) {
     let test = tests[t];
 
     let p = {
-        test: test.name + (test.modifiers ? test.modifiers[randomInt(0, test.modifiers.length)] : ""),
+        test: test.name,
+        modifier: (test.modifiers ? test.modifiers[randomInt(0, test.modifiers.length - 1)] : ""),
         year: randomInt(test.yearRange[0], test.yearRange[1]),
         problem: randomInt(test.problemRange[0], test.problemRange[1]),
         difficulty: 0
@@ -133,7 +134,7 @@ async function fetchProblems(count, t, sortExam) {
     let remaining = count - t.length * flooredAverage;
     for (let i = 0; i < t.length; ++i){
         problemCount[i] = flooredAverage;
-        a[i] = randomInt(0, remaining + 1);
+        a[i] = randomInt(0, remaining);
     }
 
     a.sort();
