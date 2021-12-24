@@ -1,5 +1,7 @@
 > Site still in development
 
+![Virtual Olympiad Logo](./client/public/assets/vo_png_logo_horizontal.png)
+
 # Virtual Olympiad
 
 ### Online Multiplayer Mock Competitions for Math
@@ -16,7 +18,11 @@ VOBot is a Discord bot to generate competition math problems from past contests.
 
 ## Guide
 
-[**→ Check out the VO guide**](HELP.md)
+[**→ Check out the VO Guide**](https://github.com/polarr/virtual-olympiad/wiki/Guide)
+
+## FAQ 
+
+[**→ Check out the VO FAQ**](https://github.com/polarr/virtual-olympiad/wiki/FAQ)
 
 ## License
 
