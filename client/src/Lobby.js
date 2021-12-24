@@ -169,7 +169,7 @@ function Lobby({ socket }){
     return (
         <section className = "lobby">
             <section className = "lobby-header">
-                <img className = "lobby-logo" src = "/logo/horizontal_logo.svg" alt="Virtual Olympiad"/>
+                <img className = "lobby-logo" src = "/logo/vo_svg_logo_horizontal.svg" alt="Virtual Olympiad"/>
                 <div className = "lobby-icons"><a href = "https://github.com/1e9end/virtual-olympiad" target = "_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Octicons-mark-github.svg/2048px-Octicons-mark-github.svg.png"></img></a> <a href = "https://github.com/1e9end/virtual-olympiad/blob/main/SETTINGS.md" target = "_blank"><i class="fas fa-question-circle"></i></a></div>
             </section>
             {starting ?
