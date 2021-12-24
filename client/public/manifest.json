@@ -1,21 +1,21 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "VO",
+  "name": "Virtual Olympiad",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "./logo/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "./logo/vo_png_icon_1x.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "116x116"
     },
     {
-      "src": "logo512.png",
+      "src": "./logo/vo_png_icon_4x.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "464x464"
     }
   ],
   "start_url": ".",
