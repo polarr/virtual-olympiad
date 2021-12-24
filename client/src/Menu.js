@@ -28,8 +28,8 @@ function CreateRoom({name, socket}){
         <div className = "create-room">
             <select className = "select-mode" name="select-mode" value={mode} onChange = {e => setMode(e.target.value)}>
                 <ModeOption value = {0} mode = {mode} name = "Normal"/>
-                /** <ModeOption value = {1} mode = {mode} name = "Practice"/>
-                <ModeOption value = {2} mode = {mode} name = "Time Rush"/> **/
+                {/* <ModeOption value = {1} mode = {mode} name = "Practice"/>
+                <ModeOption value = {2} mode = {mode} name = "Time Rush"/> */}
             </select>
             <button className = "create-room-button" onClick = {handleClick}>Create Room</button>
         </div>
