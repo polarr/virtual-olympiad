@@ -38,7 +38,7 @@ function Problem({index, question, response, onChange, submitted, solution}) {
                 </a>:""
             }</div>
             <div className = "problem-question" dangerouslySetInnerHTML={{__html: question}}></div>
-            <div className = "horizontal-flex"><input type="text" className ="problem-input" id={`problem-input-${index + 1}`} name="problem-input" maxlength="3" placeholder="Answer" value = {response} onChange = {e => onChange(index, e.target.value)}/>
+            <div className = "horizontal-flex"><input type="text" className ="problem-input" id={`problem-input-${index + 1}`} name="problem-input" maxlength="3" placeholder="Answer" value = {response} onChange = {e => onChange(index, e.target.value)} disabled={submitted}/>
             {submitted ? <div className = "problem-answer" style={{backgroundColor: response == solution?.answer ? "#009412":"#ff0000"}}>{solution?.answer}</div>:""}
             </div>
         </article>
@@ -172,7 +172,7 @@ function Exam({socket}){
     }, [socket]);
 
     useEffect(()=> {
-      if (time && time <= 0 && !submitted){
+      if (time != null && time <= 0 && !submitted){
         submitExam();
       }
     }, [time]);

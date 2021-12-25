@@ -116,13 +116,18 @@ function generateProblem(t, check) {
     let p = {
         test: test.name,
         modifier: (test.modifiers ? test.modifiers[randomInt(0, test.modifiers.length - 1)] : ""),
-        year: randomInt(test.yearRange[0], test.yearRange[1]),
+        year: randomInt(test.yearRange[0], test.yearRange[1] - 1),
         problem: randomInt(test.problemRange[0], test.problemRange[1]),
         difficulty: 0
     };
     p.difficulty = problemDifficulty(t, p.year, p.problem)
 
-    return check.includes(p) ? generateProblem(t, check) : p;
+    for (let i = 0; i < check.length; ++i){
+        if (JSON.stringify(check[i]) == JSON.stringify(p)){
+            return generateProblem(t, check);
+        }
+    }
+    return p;
 }
 
 async function fetchProblems(count, t, sortExam) {
