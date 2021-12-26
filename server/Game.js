@@ -140,7 +140,7 @@ class Game {
 
             return true;
         } else {
-            socket.emit("join-game-exceed-party-limit");
+            socket.emit("error-lobby-full");
             return false;
         }
     }
@@ -261,7 +261,7 @@ class Game {
         }
 
         if (parsedTests.length < 1) {
-            socket.emit("error-test-length-positive");
+            socket.emit("error-no-test");
             return;
         }
 

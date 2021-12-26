@@ -67,6 +67,11 @@ io.on('connection', (socket) => {
             return;
         }
 
+        if (!name?.length){
+            socket.emit('error-no-name');
+            return;         
+        }
+
         let code = generateRoomCode();
         socket.join(code);
         rooms[socket.id] = code;
@@ -79,13 +84,18 @@ io.on('connection', (socket) => {
             return;
         }
 
+        if (!name?.length){
+            socket.emit('error-no-name');        
+            return;    
+        }
+
         if (code in games) {
             if (games[code].join(socket, name, code)){
                 rooms[socket.id] = code;
             }
         }
         else {
-            socket.emit('join-game-invalid');
+            socket.emit('error-invalid-code');
         }
     });
 

@@ -1,4 +1,4 @@
-@import '../assets/variables';
+@import "../assets/variables";
 
 .lobby {
     position: relative;
@@ -12,7 +12,7 @@
 
     background-color: #fff;
     font-size: 1em;
-    color:#000;
+    color: #000;
 }
 
 .lobby-header {
@@ -35,7 +35,7 @@
             display: flex;
             align-items: center;
 
-            &:hover{
+            &:hover {
                 cursor: pointer;
             }
         }
@@ -64,6 +64,25 @@
 
 .loading-exam {
     margin: auto;
+
+    .loader {
+        border: 5px solid $fill-grey; /* Light grey */
+        border-top: 5px solid $main-blue; /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }
 
 .lobby-title {
@@ -110,7 +129,7 @@
     }
 }
 
-@mixin setting-box($includeMargin: false){
+@mixin setting-box($includeMargin: false) {
     @if $includeMargin != 0 {
         margin: 5px;
     }
@@ -166,16 +185,17 @@
         margin: 5px;
     }
 
-    > input[type="number"]{
+    > input[type="number"] {
         width: 48px;
     }
 
-    > input[type="range"]{
+    > input[type="range"] {
         max-width: 200px;
     }
 }
 
-.lobby-test-sources, .lobby-exam-settings {
+.lobby-test-sources,
+.lobby-exam-settings {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -206,7 +226,6 @@
             cursor: pointer;
         }
     }
-
 
     .start-button {
         margin: 5px;

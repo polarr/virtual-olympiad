@@ -1,6 +1,8 @@
 @import '../assets/variables';
 
 .menu {
+    z-index: 10;
+    
     width: clamp(400px, 30%, 700px);
 
     display: flex;
@@ -145,18 +147,26 @@
     }
 }
 
-.footer {
+.copyright, .promotion {
     position: absolute;
-    left: 0px;
     bottom: 0px;
-    padding: 5px;
-    text-align: center;
+    padding: 10px 15px;
+
+    color: #fff;
+    a {
+        color: #fff;
+    }
+    font-size: 14px;
 }
 
-.help {
-    position: absolute;
+.copyright {
     right: 0px;
-    bottom: 0px;
-    padding: 5px;
-    text-align: center;
+}
+
+.promotion {
+    left: 0px;
+    img {
+        width: 40px;
+        height: 40px;
+    }
 }
