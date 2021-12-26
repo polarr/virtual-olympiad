@@ -6,7 +6,7 @@
 
 ### Online Multiplayer Mock Competitions for Math
 
-Virtual Olympiad (VO) is a platform to host multiplayer competition math contests/practice featuring previous questions from the AMC, AIME and more!
+Virtual Olympiad (VO) is a platform for hosting multiplayer practice math contests in a competitive style using questions from past contests!
 
 [**→ Check out the Virtual Olympiad website**](https://virtual-olympiad.herokuapp.com)
 
