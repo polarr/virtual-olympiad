@@ -218,12 +218,16 @@ function Lobby({ socket }) {
         function errorNoTest(){
             toast.error('Select at least one source');
         }
+        function errorNotOwner(){
+            toast.error('Only the owner can perform this action');
+        }
 
         socket.on("update-players", updatePlayers);
         socket.on("update-admin", updateAdmin);
         socket.on("update-settings", updateSettings);
         socket.on("starting-game", toggleStarting);
         socket.on("error-no-test", errorNoTest);
+        socket.on("error-not-owner", errorNotOwner);
 
         return () => {
             socket.off("update-players", updatePlayers);
@@ -231,6 +235,7 @@ function Lobby({ socket }) {
             socket.off("update-settings", updateSettings);
             socket.off("starting-game", toggleStarting);
             socket.off("error-no-test", errorNoTest);
+            socket.on("error-not-owner", errorNotOwner);
         };
     }, [socket]);
 

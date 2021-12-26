@@ -250,7 +250,12 @@ class Game {
     }
 
     async startGame(socket) {
-        if (this.started || socket.id != this.owner) {
+        if (this.started) {
+            return;
+        }
+
+        if (socket.id != this.owner){
+            socket.emit("error-not-owner");
             return;
         }
 

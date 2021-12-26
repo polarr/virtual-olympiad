@@ -147,9 +147,8 @@
     }
 }
 
-.copyright, .promotion {
+.copyright, .promotion, .help {
     position: absolute;
-    bottom: 0px;
     padding: 10px 15px;
 
     color: #fff;
@@ -160,13 +159,20 @@
 }
 
 .copyright {
+    bottom: 0px;
     right: 0px;
 }
 
 .promotion {
+    bottom: 0px;
     left: 0px;
     img {
         width: 40px;
         height: 40px;
     }
+}
+
+.help {
+    top: 0px;
+    right: 0px;
 }

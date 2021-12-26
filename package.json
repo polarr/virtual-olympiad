@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node ./server/index.js",
-    "build": "cd client && npm run build",
+    "build": "cd client && npm install && npm run build",
     "legacy-build": "cd client && npm run legacy-build",
     "pnpm-build": "cd client && pnpm legacy-build"
   },

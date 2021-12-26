@@ -139,6 +139,9 @@ function Menu({ socket }) {
                     )}
                 </div>
             </section>
+            <div className="help">
+                <a href="https://github.com/polarr/virtual-olympiad/wiki/Guide" target="_blank">Help</a>
+            </div>
             <footer className="promotion">
                 <a href="https://discord.gg/3eXC9UE6rT" target="_blank">
                     <img src="https://cdn.jsdelivr.net/npm/simple-icons@v3/icons/discord.svg"></img>

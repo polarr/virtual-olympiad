@@ -99,6 +99,7 @@ function App() {
         ctx.filter = "blur(20px)";
         ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
         if (frameCount === 1) {
+            let minDim = Math.min(canvas.width, canvas.height);
             for (let i = 0; i < 10; ++i) {
                 let direction = Math.random() * 2 * Math.PI;
                 let circle = {
@@ -110,7 +111,7 @@ function App() {
                     speed: Math.max(0.5, Math.random() * 3),
                     xVel: Math.cos(direction),
                     yVel: Math.sin(direction),
-                    size: Math.random() * 50 + 100,
+                    size: Math.random() * minDim/20 + minDim/10,
                 };
 
                 circles.push(circle);
@@ -150,6 +151,7 @@ function App() {
                             position="bottom-center"
                             reverseOrder={false}
                         />
+                        <Canvas className="background" draw={draw} />
                         <Lobby socket={socket} />
                     </div>
                 );
