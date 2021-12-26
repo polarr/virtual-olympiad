@@ -8,7 +8,7 @@
 
 Virtual Olympiad (VO) is a platform to host multiplayer competition math contests/practice featuring previous questions from the AMC, AIME and more!
 
-[**→ Check out the Virtual Olympiad website**](https://virtual-olympiad.1egend.repl.co)
+[**→ Check out the Virtual Olympiad website**](https://virtual-olympiad.herokuapp.com)
 
 ## Other VO Projects
 
