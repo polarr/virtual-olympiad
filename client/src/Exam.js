@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 function PlayerBox({ socket, player }) {
@@ -183,14 +183,19 @@ class AdjustingTimer {
 
 function Exam({ socket }) {
     const [finished, setFinished] = useState(false);
+    let grading = false;
     const [submitted, setSubmitted] = useState(false);
     const [players, setPlayers] = useState([]);
 
     const [time, setTime] = useState(null);
     const [timer, setTimer] = useState(null);
+    const timerRef = useRef();
+    timerRef.current = timer;
     const [problems, setProblems] = useState([]);
 
     const [response, setResponse] = useState([]);
+    const responseRef = useRef();
+    responseRef.current = response;
     const [score, setScore] = useState(0);
     const [solutions, setSolutions] = useState([]);
     const [results, setResults] = useState([]);
@@ -202,6 +207,7 @@ function Exam({ socket }) {
     }
 
     function submitExam() {
+        grading = true;
         socket.emit("submit-exam", { response: response });
         timer?.stop?.();
     }
@@ -227,9 +233,6 @@ function Exam({ socket }) {
                 }, 1000)
             );
         }
-        function forceSubmit() {
-            socket.emit("submit-exam", { response: response });
-        }
         function updateSubmitted({ time, response, score, solutions }) {
             setSubmitted(true);
             setResponse(response);
@@ -237,30 +240,40 @@ function Exam({ socket }) {
             setScore(score);
             setSolutions(solutions);
         }
+        function forceSubmitExam() {
+            if (grading){
+                return;
+            }
+            grading = true;
+            socket.emit("submit-exam", { response: responseRef.current });
+            timerRef.current?.stop?.();
+        }
 
         socket.on("exam-details", updateExam);
         socket.on("update-players", updatePlayers);
         socket.on("finish-game", toggleFinished);
-        socket.on("force-submit-exam", forceSubmit);
+        socket.on("force-submit-exam", forceSubmitExam);
         socket.on("submit-exam-success", updateSubmitted);
 
         return () => {
             socket.off("exam-details", updateExam);
             socket.off("update-players", updatePlayers);
             socket.off("finish-game", toggleFinished);
-            socket.off("force-submit-exam", forceSubmit);
+            socket.off("force-submit-exam", forceSubmitExam);
             socket.off("submit-exam-success", updateSubmitted);
         };
     }, [socket]);
 
     useEffect(() => {
-        if (time != null && time <= 0 && !submitted) {
+        if (time != null && time <= 0 && !grading) {
             submitExam();
         }
     }, [time]);
 
     useEffect(() => {
-        timer?.start?.();
+        if (!grading){
+            timer?.start?.();
+        }
     }, [timer]);
 
     return (

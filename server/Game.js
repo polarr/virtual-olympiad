@@ -90,6 +90,7 @@ class Game {
         };
 
         this.started = false;
+        this.ended = false;
         this.exam = {
             problems: [],
             clientProblems: [],
@@ -323,7 +324,7 @@ class Game {
         p.time = this.settings.timeLimit * 60 - this.exam.timeLeft;
         p.status = 1;
 
-        let formatRes = response.map((el, i) => {
+        let formatRes = response?.map?.((el, i) => {
             let { answer } = this.exam.problems[i];
             let res = el
                 ?.toUpperCase()
@@ -345,24 +346,21 @@ class Game {
         });
         this.emitPlayers();
 
-        let finished = true;
         for (let i in this.players) {
             if (this.players[i].status !== 1) {
-                finished = false;
-                break;
+                return 0;
             }
         }
 
-        if (finished) {
-            let players = Object.entries(this.players).map(([i, p]) => {
-                return p.id;
-            });
-            this.finishGame();
-            return players;
-        }
+        let players = Object.entries(this.players).map(([i, p]) => {
+            return p.id;
+        });
+        this.finishGame();
+        return players;
     }
 
     finishGame() {
+        this.ended = true;
         this.timer?.stop();
 
         let results = [];
@@ -383,6 +381,7 @@ class Game {
     }
 
     end() {
+        this.ended = true;
         this.timer?.stop();
         this.emit("end-game");
 
@@ -393,8 +392,6 @@ class Game {
                 client.leave(this.code);
             }
         }
-
-        delete this;
     }
 }
 

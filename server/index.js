@@ -18,7 +18,6 @@ const io = new Server(http, {
 var rooms = {};
 var games = {};
 
-// API Routing
 const port = process.env.PORT || 4000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -43,7 +42,7 @@ http.listen(port, () => {
 
 function generateRoomCode() {
     let code = Math.round(Math.pow(36, 5) - Math.random() * Math.pow(36, 4)).toString(36).slice(1);
-    if (code in rooms) {
+    if (code in games) {
         return generateRoomCode();
     }
     else {
@@ -89,7 +88,7 @@ io.on('connection', (socket) => {
             return;    
         }
 
-        if (code in games) {
+        if (code in games && !games[code].ended) {
             if (games[code].join(socket, name, code)){
                 rooms[socket.id] = code;
             }
