@@ -22,7 +22,7 @@ function Canvas(props) {
         let animationFrameId;
 
         const render = () => {
-            frameCount++;
+            ++frameCount;
             draw(context, frameCount);
             animationFrameId = window.requestAnimationFrame(render);
         };
@@ -36,9 +36,27 @@ function Canvas(props) {
     return <canvas ref={canvasRef} {...rest} />;
 }
 
+function BackgroundToggle({checked, onChange}){
+    return (<div className="background-toggle">
+        Toggle Background
+        <br /> 
+        <label className="switch">
+        <input
+            type="checkbox"
+            value={true}
+            checked={checked}
+            onChange={(e) => onChange(e.target.checked)}
+        />
+        <span className="slider round"></span>
+        </label>
+    </div>);
+}
+
 function App() {
     const [socket, setSocket] = useState(null);
     const [page, setPage] = useState(0);
+
+    const [background, setBackground] = useState(true);
 
     useEffect(() => {
         const newSocket = io();
@@ -95,10 +113,9 @@ function App() {
         let { canvas } = ctx;
         resizeCanvas(canvas);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+        
         ctx.filter = "blur(20px)";
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-        if (frameCount === 1) {
+        if (frameCount == 1) {
             let minDim = Math.min(canvas.width, canvas.height);
             for (let i = 0; i < 10; ++i) {
                 let direction = Math.random() * 2 * Math.PI;
@@ -143,41 +160,33 @@ function App() {
     }
 
     if (socket) {
+        let renderPage;
         switch (page) {
             case 1:
-                return (
-                    <div className="App">
-                        <Toaster
-                            position="bottom-center"
-                            reverseOrder={false}
-                        />
-                        <Canvas className="background" draw={draw} />
-                        <Lobby socket={socket} />
-                    </div>
-                );
+                renderPage = <Lobby socket={socket} />;
+                break;
             case 2:
-                return (
-                    <div className="App">
-                        <Toaster
-                            position="bottom-center"
-                            reverseOrder={false}
-                        />
-                        <Exam socket={socket} />
-                    </div>
-                );
+                renderPage = <Exam socket={socket} />;
+                break;
             case 0:
             default:
-                return (
-                    <div className="App">
-                        <Toaster
-                            position="bottom-center"
-                            reverseOrder={false}
-                        />
-                        <Canvas className="background" draw={draw} />
-                        <Menu socket={socket} />
-                    </div>
-                );
+                renderPage = <Menu socket={socket} />;
         }
+
+        return (
+            <div className="App">
+                <Toaster
+                    position="bottom-center"
+                    reverseOrder={false}
+                />
+                {background && 
+                    <Canvas className="background" draw={draw} />
+                }
+                {renderPage}
+                <BackgroundToggle checked={background} onChange={setBackground} />
+            </div>
+        );
+        
     }
 
     return <div className="App">Not connected to server...</div>;
