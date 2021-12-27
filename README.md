@@ -26,7 +26,7 @@ VOBot is a Discord bot to generate competition math problems from past contests.
 
 ## License
 
-VO is open-distribution software by [polarity](https://github.com/polarr) licensed under [GNU GPL 2.0 + Commons Clause](LICENSE) (**No** commercial use)
+VO is open-distribution software by [polarity](https://github.com/polarr) licensed under [GPL 2.0 + Commons Clause](LICENSE) (**No** commercial use)
 
 ---
 
