@@ -83,10 +83,20 @@ function problemDifficulty(t, year, problem) {
 async function scrapeProblem({test, modifier, year, problem, difficulty}) {
     const url = `https://artofproblemsolving.com/wiki/index.php/${year}_${tests[test].urlName}${modifier}`;
     try {
-        const [{ body: PHTML }, { body: AHTML }] = await Promise.all([got(url + "_Problems"), got(url + "_Answer_Key")]);
+        const [{ body: PHTML }, { body: AHTML }] = await Promise.all([got(url + `_Problems/Problem_${problem}`), got(url + "_Answer_Key")]);
 
         let $ = cheerio.load(PHTML);
+        /** 
         const p = Object.entries($(`h2:has(span[id="Problem_${problem}"])`).nextUntil('p:has(a:contains("Solution")), h2')).map(el => {
+            if (!isInt(el[0])){
+                return '';
+            }
+            let element = $(el[1]);
+            return `<${element['0'].name}>${element.html()}</${element['0'].name}>`;
+        }).join('');
+        **/
+
+        const p = Object.entries($(`h2:has(span[id="Problem"])`).nextUntil('p:has(a:contains("Solution")), h2')).map(el => {
             if (!isInt(el[0])){
                 return '';
             }

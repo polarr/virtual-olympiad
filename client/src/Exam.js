@@ -265,8 +265,17 @@ function Exam({ socket }) {
     }, [socket]);
 
     useEffect(() => {
+        function forceSubmitExam() {
+            if (grading){
+                return;
+            }
+            grading = true;
+            socket.emit("submit-exam", { response: responseRef.current });
+            timerRef.current?.stop?.();
+        }
+
         if (time != null && time <= 0 && !grading) {
-            submitExam();
+            forceSubmitExam();
         }
     }, [time]);
 
