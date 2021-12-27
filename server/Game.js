@@ -289,10 +289,13 @@ class Game {
         });
 
         this.emit("page-exam");
-        this.emit("exam-details", {
-            problems: this.exam.clientProblems,
-            time: this.exam.timeLeft,
-        });
+        setTimeout(() => {
+            this.emit("exam-details", {
+                problems: this.exam.clientProblems,
+                time: this.exam.timeLeft,
+            });
+        }, 100);
+        
         this.timer = new AdjustingTimer(() => {
             --this.exam.timeLeft;
             if (this.exam.timeLeft <= 0) {
