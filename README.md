@@ -1,4 +1,4 @@
-> Site still in development
+> Yes tons of bugs yes I know how to fix no I don't have time rn will fix in a few weeks 
 
 ![Virtual Olympiad Logo](./client/public/assets/vo_png_logo_horizontal.png)
 
